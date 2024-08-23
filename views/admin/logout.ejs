@@ -1,0 +1,102 @@
+<!-- Trigger Button -->
+<button id="logoutBtn" class="btn-danger1">Click here</button>
+
+<!-- Modal Structure -->
+<div id="logoutModal" class="modal1">
+    <div class="modal-contents">
+        <span class="close1">&times;</span>
+        <h2>Are you sure you want to log out?</h2>
+        <form action="/logout/confirm" method="post">
+            <button type="submit" class="btn-danger1">Yes, Logout</button>
+            <a href="/dashboard" class="btn-second1">Cancel</a>
+        </form>
+    </div>
+</div>
+
+<!-- CSS for Modal -->
+<style>
+    .modal1 {
+        display: none; 
+        position: fixed; 
+        z-index: 1; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0, 0, 0, 0.4); 
+    }
+
+    .modal-contents {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 300px;
+        text-align: center;
+        border-radius: 8px;
+    }
+
+    .close1 {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close1:hover,
+    .close1:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .btn-danger1 {
+        font-family: Verdana, sans-serif;
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.btn-second1{
+    font-family: Verdana, sans-serif;
+    margin: 5px;
+    padding: 8px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+
+.btn-danger1 {
+    background-color: rgb(200, 17, 17);
+    color: white;
+}
+
+.btn-second1 {
+    background-color: gray;
+    color: white;
+}
+</style>
+
+<!-- JavaScript for Modal -->
+<script>
+    var modal = document.getElementById("logoutModal");
+    var btn = document.getElementById("logoutBtn");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>

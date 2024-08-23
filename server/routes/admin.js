@@ -107,15 +107,20 @@ router.post('/register', async (req, res) => {
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
         const data = await Post.find().sort({ createdAt: 'desc' });
-        
+        const locals = {
+            title: 'Dashboard',
+            description: 'Simple Blog created with NodeJs, Express & MongoDb.'
+          }
         // Retrieve status message from session
         const statusMessage = req.session.statusMessage;
         // Clear the status message from the session
         delete req.session.statusMessage;
 
         res.render('admin/dashboard', {
+            locals,
             data,
-            statusMessage
+            statusMessage,
+            layout: adminLayout
         });
 
     } catch (error) {
@@ -123,6 +128,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 
 
 
@@ -229,18 +235,30 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
 router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
     try {
         await Post.deleteOne({ _id: req.params.id });
+        req.session.statusMessage = { type: 'success', text: '✅ Post deleted successfully!' };
         res.redirect('/dashboard');
     } catch (error) {
-        console.log(error);
-        res.status(500).send('Internal Server Error');
+        req.session.statusMessage = { type: 'error', text: '❌ Oops! An error occured while deleting post.' };
+        res.redirect('/dashboard');
     }
 });
 
 
 
 
+// Admin - Logout
+router.get('/logout', (req, res) => {
+    res.render('admin/logout',{
+            layout: adminLayout
+    }
+    ); // Render the logout confirmation page
+});
 
 
+router.post('/logout/confirm', async (req, res) => {
+    res.clearCookie('token'); 
+    res.redirect('/'); // Redirect to the homepage or login page
+});
 
 
 

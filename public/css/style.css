@@ -194,6 +194,10 @@ img {
     cursor: pointer;
 }
 
+.deleteMessage{
+    line-height: 0.2;
+}
+
 /* Modal actions (buttons) */
 .modal-actions {
     display: flex;
@@ -204,14 +208,15 @@ img {
 .cancel-btn, .delete-btn {
     padding: 10px 20px;
     border: none;
+    margin-top: 2em;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
 }
 
 .cancel-btn {
-    background-color: #ccc;
-    color: #333;
+    background-color: #038905;
+    color: #fff;
 }
 
 .delete-btn {
@@ -221,6 +226,10 @@ img {
 
 .delete-btn:hover {
     background-color: #c9302c;
+}
+
+.cancel-btn:hover{
+    background-color: #0e3b03d4
 }
 
 
@@ -234,6 +243,8 @@ img {
 .main {
     padding: 20px 0;
 }
+
+
 
 /* Hero section */
 .hero_image {

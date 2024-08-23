@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
         const locals = {
             title: "Blog first",
             description: "Testing the blog section"
-        }
+        };
 
         let perPage = 10;
         let page = req.query.page || 1;
@@ -33,24 +33,27 @@ router.get('/', async (req, res) => {
             .limit(perPage)
             .exec();
 
-        const count = await Post.countDocuments();  // Corrected this line
+        const count = await Post.countDocuments();
         const nextPage = parseInt(page) + 1;
-        const hasNextPage = nextPage <= Math.ceil(count / perPage);  // Corrected typo here
+        const hasNextPage = nextPage <= Math.ceil(count / perPage);
 
+        const statusMessage = req.session.statusMessage; // Save statusMessage for use
 
+        // Clear statusMessage after rendering
+        delete req.session.statusMessage;
 
         res.render('index', {
             locals,
             data,
             current: page,
-            nextPage: hasNextPage ? nextPage : null
+            nextPage: hasNextPage ? nextPage : null,
+            statusMessage // Pass statusMessage to the template
         });
-    }
-    catch (error) {
+    } catch (error) {
         console.log(error);
     }
-
 });
+
 
 
 /*function insertPostData(){

@@ -14,6 +14,8 @@ const PORT = process.env.PORT || 5000;
 
 connectDB();
 
+
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -27,7 +29,7 @@ app.use(session({
     store: mongoStore.create({
         mongoUrl: process.env.MONGODB_URI,
     }),
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: { secure: false }
     // cookie: { maxAge: 3600000 }
 }));
 
@@ -47,6 +49,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use('/', require('./server/routes/main'));
 app.use('/', require('./server/routes/admin'));
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

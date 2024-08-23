@@ -1,3 +1,9 @@
+<% if (statusMessage) { %>
+    <div class="alert <%= statusMessage.type === 'success' ? 'alert-success' : 'alert-danger' %>">
+        <%= statusMessage.text %>
+    </div>
+<% } %>
+
 <div class="author">
     <h1 class="author_heading">
         Hi, I am Ayush.
@@ -9,27 +15,19 @@
     <img src="/images/hero-image.webp" alt="person looking out of the window" class="hero_image" width="600" height="300">
 
     <section class="articles">
-        <h2 class="articles_heading">Latest Posts:
-        </h2>
+        <h2 class="articles_heading">Latest Posts:</h2>
         <ul class="article-ul">
-             
-            <% data.forEach(post=>{ %>
+            <% data.forEach(post => { %>
                 <li>
                     <a href="/post/<%= post._id %>">
                         <span><%= post.title %></span>
                         <span class="article-list_date"><%= post.createdAt.toDateString() %></span>
                     </a>
                 </li>
-           <% }) %>
+            <% }) %>
         </ul>
-       <% if(nextPage!==null) {%>
-        <a href="/?page=<%= nextPage %>" class="pagination">&lt; View Older Posts</a>
+        <% if (nextPage !== null) { %>
+            <a href="/?page=<%= nextPage %>" class="pagination">&lt; View Older Posts</a>
         <% } %>
     </section>
-
-
-
-
-
-
 </div>

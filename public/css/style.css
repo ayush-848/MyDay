@@ -333,8 +333,8 @@ img {
     text-decoration: underline;
 }
 
-.header_nav ul a:active {
-    color: var(--gray);
+.header_nav ul a.active {
+    color: var(--gray) !important;
 }
 
 /* Author homepage */
@@ -451,15 +451,16 @@ img {
 
 
 .pagination {
-    font-size: 1.3rem;
-    color: var(--gray);
+    font-size: 1.1rem;
+    color: var(--black);
+    font-weight: 500;
     display: inline-block;
     margin-top: 40px;
     text-decoration: none;
 }
 
 .pagination:hover {
-    color: var(--black);
+    color: var(--gray);
 }
 
 .article {

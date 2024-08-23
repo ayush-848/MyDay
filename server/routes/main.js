@@ -47,6 +47,7 @@ router.get('/', async (req, res) => {
             data,
             current: page,
             nextPage: hasNextPage ? nextPage : null,
+            currentRoute: '/',
             statusMessage // Pass statusMessage to the template
         });
     } catch (error) {
@@ -115,7 +116,8 @@ router.post('/search',async (req,res)=>{
       });
        res.render("search",{
         data,
-        locals
+        locals,
+        currentRoute: '/'
        });
     }catch(error){
        console.log(error);
@@ -124,8 +126,10 @@ router.post('/search',async (req,res)=>{
 });
 
 router.get('/about', (req, res) => {
-    res.render('about');
-})
+    res.render('about',{
+        currentRoute:'/about'
+    });
+});
 
 
 

@@ -151,8 +151,9 @@ router.get('/add-post', authMiddleware, async (req, res) => {
 
 // Admin - Post new post
 
-router.post('/add-post', authMiddleware, async (req, res, next) => {
+router.post('/add-post', authMiddleware, async (req, res) => {
     try {
+
         try {
             const newPost = new Post({
                 title: req.body.title,
@@ -160,18 +161,20 @@ router.post('/add-post', authMiddleware, async (req, res, next) => {
             });
 
             await Post.create(newPost);
-            req.session.statusMessage = { type: 'success', text: '✅ Post added successfully!' };
             res.redirect('/dashboard');
-        } catch (error) {
-            console.log(error);
-            req.session.statusMessage = { type: 'error', text: '❌ Oops! Error occurred while adding post.' };
-            res.redirect('/dashboard');
+
+
         }
+        catch (error) {
+            console.log(error)
+        }
+
+
     } catch (error) {
-        return res.status(500).render('errors/error500', { error: error });
+        console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 });
-
 
 
 // Admin - Get Post
@@ -220,29 +223,3 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
         res.redirect('/dashboard');
     }
 });
-
-
-
-
-
-// Admin - Delete Post (DELETE)
-router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
-    try {
-        await Post.deleteOne({ _id: req.params.id });
-        res.redirect('/dashboard');
-    } catch (error) {
-        console.log(error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-
-
-
-
-
-
-
-
-
-module.exports = router;

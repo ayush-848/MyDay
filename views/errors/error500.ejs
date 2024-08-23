@@ -1,0 +1,24 @@
+<div class="center-container">
+    <div class="error-container">
+        <h1>500 - Internal Server Error</h1>
+        <p>We're sorry, but something went wrong on our end. Our team has been notified and we're working to fix the issue.</p>
+        
+        <% if (error) { %>
+            <div class="error-details">
+                <h3>Error Details:</h3>
+                <% if (error.name) { %>
+                    <p class="error-type">Type: <%= error.name %></p>
+                <% } %>
+                <% if (error.message) { %>
+                    <p>Message: <%= error.message %></p>
+                <% } %>
+                <% if (error.stack) { %>
+                    <p>Stack: <%= error.stack.split('\n')[0] %></p>
+                <% } %>
+            </div>
+        <% } %>
+        
+        <p>Please try again later or contact support if the problem persists.</p>
+        <a href="/" class="home-link">Return to Home Page</a>
+    </div>
+</div>

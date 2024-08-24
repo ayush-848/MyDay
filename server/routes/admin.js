@@ -28,21 +28,18 @@ const authMiddleware = (req, res, next) => {
 
 // Get Home
 router.get('/admin', async (req, res) => {
-
     try {
-
         const locals = {
-            title: "Blog first",
-            description: "Testing the blog section"
-        }
-
-
+            title: "Admin Sign In",
+            description: "Please sign in to access the admin panel",
+            currentPath: req.path // Pass the current path to the view
+        };
         res.render('admin/login', { locals, layout: adminLayout });
     } catch (error) {
         console.log(error);
     }
-
 });
+
 
 // Admin posts - check login
 

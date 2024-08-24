@@ -1,9 +1,40 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+
+let demoUserId;
+async function findDemoUserId() {
+    const demoUser = await User.findOne({ username: 'demoID' });
+    if (demoUser) {
+        demoUserId = demoUser._id;
+    } else {
+        console.error('Demo user not found');
+    }
+}
+findDemoUserId();
+
+const checkUser = (req, res, next) => {
+    const token = req.cookies.token;
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+            if (err) {
+                res.locals.user = null;
+                next();
+            } else {
+                res.locals.user = decodedToken;
+                next();
+            }
+        });
+    } else {
+        res.locals.user = null;
+        next();
+    }
+};
 
 // Main page
-router.get('/', async (req, res) => {
+router.get('/', checkUser, async (req, res) => {
     try {
         const locals = {
             title: "Blog first",
@@ -13,18 +44,28 @@ router.get('/', async (req, res) => {
         let perPage = 10;
         let page = req.query.page || 1;
 
-        const data = await Post.aggregate([{ $sort: { createdAt: -1 } }])
-            .skip(perPage * page - perPage)
-            .limit(perPage)
-            .exec();
+        let query = {};
+        let username = null;
 
-        const count = await Post.countDocuments();
+        if (res.locals.user) {
+            query = { user: res.locals.user.userId };
+            // Fetch the username from the database
+            const user = await User.findById(res.locals.user.userId);
+            username = user ? user.username : null;
+        } else {
+            query = { user: demoUserId };
+        }
+
+        const data = await Post.find(query)
+            .sort({ createdAt: -1 })
+            .skip(perPage * page - perPage)
+            .limit(perPage);
+
+        const count = await Post.countDocuments(query);
         const nextPage = parseInt(page) + 1;
         const hasNextPage = nextPage <= Math.ceil(count / perPage);
 
-        const statusMessage = req.session.statusMessage; // Save statusMessage for use
-
-        // Clear statusMessage after rendering
+        const statusMessage = req.session.statusMessage;
         delete req.session.statusMessage;
 
         res.render('index', {
@@ -33,10 +74,13 @@ router.get('/', async (req, res) => {
             current: page,
             nextPage: hasNextPage ? nextPage : null,
             currentRoute: '/',
-            statusMessage // Pass statusMessage to the template
+            statusMessage,
+            user: res.locals.user,
+            username  // Pass the username to the template
         });
     } catch (error) {
         console.log(error);
+        res.status(500).send('Server Error');
     }
 });
 

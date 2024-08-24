@@ -12,9 +12,18 @@
               <li>
                 <a href="/contact" class="<%= isActiveRoute('/contact', currentRoute) %>">Contact</a>
               </li>
-            <li>
+            <% if(!username) { %>
+              <li>
                 <a href="/admin" class="<%= isActiveRoute('/admin',currentRoute) %>">Login</a>
             </li>
+            <% } else { %>
+              <li>
+                <a href="/dashboard" class="<%= isActiveRoute('/logout',currentRoute) %>">Dashboard</a>
+              </li>
+              <li>
+                <a href="/logout" class="<%= isActiveRoute('/logout',currentRoute) %>">Logout</a>
+            </li>
+          <% } %>
          </ul>
     </nav>
 

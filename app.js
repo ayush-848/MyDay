@@ -10,6 +10,27 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const connectDB = require('./server/config/db');
 const { isActiveRoute } = require('./server/helpers/routeHelpers');
+const jwt = require('jsonwebtoken');
+const User = require('./server/models/User'); // Adjust the path as needed
+
+const checkUserMiddleware = async (req, res, next) => {
+    res.locals.username = null;
+    const token = req.cookies.token;
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findById(decoded.userId);
+            if (user) {
+                res.locals.username = user.username;
+            }
+        } catch (error) {
+            console.error('Error verifying token:', error);
+        }
+    }
+    next();
+};
+
+// Use the middleware
 
 
 const app = express();
@@ -19,10 +40,12 @@ connectDB();
 
 
 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(methodOverride('_method'));
+app.use(checkUserMiddleware);
 
 
 app.use(session({

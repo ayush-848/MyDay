@@ -7,11 +7,14 @@
 <div class="author">
     <h1 class="author_heading">
         <% if (username) { %>
-             Hello <%= username %>, Good to see You
+             Hello <%= username %>,
         <% } else { %>
             Welcome to MyDay
         <% } %>
     </h1>
+    <% if (username) { %>
+        <h2>Great to see you again</h2>
+   <% } %>
     <p class="author_body">
         Hope, You are having a Good Day
     </p>

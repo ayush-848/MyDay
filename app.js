@@ -32,12 +32,13 @@ app.use(session({
     store: mongoStore.create({
         mongoUrl: process.env.MONGODB_URI,
     }),
-    cookie: { secure: false }
+    cookie: { secure: true }
     // cookie: { maxAge: 3600000 }
 }));
 
 app.use(flash());
 app.use((req, res, next) => {
+    res.locals.currentRoute = req.path;
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     next();

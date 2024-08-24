@@ -1,0 +1,24 @@
+<div class="center-container">
+    <div class="error-container">
+        <h1>404 - Page Not Found</h1>
+        <p>We're sorry, but the Post you were looking for could not be found. It might have been removed or you may have mistyped the URL.</p>
+        
+        <% if (error) { %>
+            <div class="error-details">
+                <h3>Error Details:</h3>
+                <% if (error.name) { %>
+                    <p class="error-type">Type: <%= error.name %></p>
+                <% } %>
+                <% if (error.message) { %>
+                    <p>Message: <%= error.message %></p>
+                <% } %>
+                <% if (error.stack) { %>
+                    <p>Stack: <%= error.stack.split('\n')[0] %></p>
+                <% } %>
+            </div>
+        <% } %>
+        
+        <p>Please check the URL and try again, or return to the home page.</p>
+        <a href="/" class="home-link">Return to Home Page</a>
+    </div>
+</div>

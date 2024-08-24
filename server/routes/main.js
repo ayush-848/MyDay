@@ -1,25 +1,8 @@
-// main.js
-
-const express = require('express')
+const express = require('express');
 const router = express.Router();
-const Post = require('../models/Post')
+const Post = require('../models/Post');
 
-/*router.get('/',async (req,res)=>{
-    const locals={
-        title: "Blog first",
-        description: "Testing the blog section"
-    }
-
-    try{
-       const data=await Post.find();
-       res.render('index',{locals,data});
-    }catch(error){
-       console.log(error);
-    }
-
-});
-*/
-
+// Main page
 router.get('/', async (req, res) => {
     try {
         const locals = {
@@ -57,38 +40,18 @@ router.get('/', async (req, res) => {
     }
 });
 
-
-
-/*function insertPostData(){
-    Post.insertMany([
-        {
-            title: "Building a simple blog website",
-            body: "This is the post body"
-        },
-        {
-            title: "Why Do I have to learn a new tech stack after few days",
-            body: "Market is not good, they why??? "
-        },
-        {
-            title: "DIY Restaurants are overrated",
-            body: "They really are. We can bring ingredients from mall and can cook it by ourselves. This will also be a cheaper option"
-        }
-    ])
-}
-insertPostData();
-    */
-
+// View a single post
 router.get('/post/:id', async (req, res) => {
     try {
         let slug = req.params.id;
-
         const data = await Post.findById({ _id: slug });
-
+        if (!data) {
+            return res.status(404).send('Post not found');
+        }
         const locals = {
             title: data.title,
-            description: "Simple Blog created with NodeJs, Express & MongoDb.",
-        }
-
+            description: "Simple Blog created with NodeJs, Express & MongoDb."
+        };
         res.render('post', {
             locals,
             data,
@@ -97,46 +60,39 @@ router.get('/post/:id', async (req, res) => {
     } catch (error) {
         console.log(error);
     }
-
 });
 
-router.post('/search',async (req,res)=>{
-
-    try{
-        const locals={
+// Search functionality
+router.post('/search', async (req, res) => {
+    try {
+        const locals = {
             title: "Search",
             description: "Testing the blog section"
-        }
-    let searchTerm=req.body.searchTerm;
-    const searchNoSpecialChar=searchTerm.replace(/[^a-zA-Z0-9]/g,"");
+        };
+        let searchTerm = req.body.searchTerm;
+        const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "");
 
-      const data=await Post.find({
-        $or:[
-            {title: { $regex: new RegExp(searchNoSpecialChar,'i')}},
-            {body: { $regex: new RegExp(searchNoSpecialChar,'i')}}
-        ]
-      });
-       res.render("search",{
-        data,
-        locals,
-        currentRoute: '/'
-       });
-    }catch(error){
-       console.log(error);
+        const data = await Post.find({
+            $or: [
+                { title: { $regex: new RegExp(searchNoSpecialChar, 'i') } },
+                { body: { $regex: new RegExp(searchNoSpecialChar, 'i') } }
+            ]
+        });
+        res.render("search", {
+            data,
+            locals,
+            currentRoute: '/'
+        });
+    } catch (error) {
+        console.log(error);
     }
-
 });
 
+// About page
 router.get('/about', (req, res) => {
-    res.render('about',{
-        currentRoute:'/about'
+    res.render('about', {
+        currentRoute: '/about'
     });
 });
-
-
-
-
-
-
 
 module.exports = router;

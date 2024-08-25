@@ -148,13 +148,13 @@ router.post('/subscribe', async (req, res) => {
       await newSubscriber.save();
       req.session.statusMessage = {
         type: 'success',
-        text: 'Subscribed successfully!'
+        text: '✅ Subscribed successfully!'
       };
     } catch (error) {
       console.error('Error subscribing:', error);
       req.session.statusMessage = {
         type: 'error',
-        text: 'Error subscribing. Please try again.'
+        text: '❌ This email has already been subscribed.'
       };
     }
     res.redirect('/');

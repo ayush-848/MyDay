@@ -1,0 +1,24 @@
+<div class="center-container">
+    <div class="error-container">
+        <h1>401 - Unauthorized</h1>
+        <p>Sorry, but you are not authorized to access this page. Please check your credentials and try again.</p>
+        
+        <% if (error) { %>
+            <div class="error-details">
+                <h3>Error Details:</h3>
+                <% if (error.name) { %>
+                    <p class="error-type">Type: <%= error.name %></p>
+                <% } %>
+                <% if (error.message) { %>
+                    <p>Message: <%= error.message %></p>
+                <% } %>
+                <% if (error.stack) { %>
+                    <p>Stack: <%= error.stack.split('\n')[0] %></p>
+                <% } %>
+            </div>
+        <% } %>
+        
+        <p>Please make sure you have the correct credentials or return to the home page.</p>
+        <a href="/" class="home-link">Return to Home Page</a>
+    </div>
+</div>

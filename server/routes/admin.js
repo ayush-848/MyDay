@@ -45,16 +45,24 @@ router.post('/admin', async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+
+        try {
+            if (!user || !(await bcrypt.compare(password, user.password))) {
+                return res.status(401).render('errors/error401', { error: new Error('Invalid credentials'), message: 'Invalid credentials' });
+            }
+
+            const token = jwt.sign({ userId: user._id }, jwtSecret);
+            res.cookie('token', token, { httpOnly: true });
+            res.redirect('/');
+        } catch (authError) {
+            return res.status(401).render('errors/error401', { error: authError, message: 'Invalid credentials' });
         }
-        const token = jwt.sign({ userId: user._id }, jwtSecret);
-        res.cookie('token', token, { httpOnly: true });
-        res.redirect('/');
+
     } catch (error) {
-        res.status(500).json({ message: 'Error logging in' });
+        return res.status(500).render('errors/error500', { error: error});
     }
 });
+
 
 // Admin Register
 router.post('/register', async (req, res) => {
@@ -63,8 +71,8 @@ router.post('/register', async (req, res) => {
         // Check if the username already exists
         const existingUser = await User.findOne({ username });
         if (existingUser) {
-            // Return an error if the username is already taken
-            return res.status(400).json({ message: 'Username already exists' });
+            req.session.statusMessage = { type: 'error', text: '❌ User already exist' };
+        res.redirect('/');
         }
 
         // Hash the password
@@ -74,11 +82,12 @@ router.post('/register', async (req, res) => {
         const newUser = new User({ username, password: hashedPassword });
         await newUser.save();
 
-        res.status(201).json({ message: 'User created successfully' });
+        req.session.statusMessage = { type: 'success', text: '✅ Registered successfully!' };
+        res.redirect('/');
     } catch (error) {
         // Handle errors, such as database errors
         console.error(error);
-        res.status(500).json({ message: 'Error creating user' });
+        return res.status(500).render('errors/error500', { error: error, message: 'Error creating user' });
     }
 });
 
@@ -159,7 +168,7 @@ router.get('/edit-post/:id', authMiddleware, async (req, res) => {
     try {
         const post = await Post.findOne({ _id: req.params.id, user: req.userId });
         if (!post) {
-            return res.status(404).send('Post not found');
+            return res.status(404).render('errors/error404', { error: errror, message: 'Post not found' });
         }
         const locals = {
             title: "Edit Post",
@@ -228,14 +237,14 @@ router.post('/send-newsletter', async (req, res) => {
   
       req.session.statusMessage = {
         type: 'success',
-        text: 'Newsletter sent successfully!'
+        text: '✅ Newsletter sent successfully!'
       };
       res.redirect('/dashboard');
     } catch (error) {
       console.error('Error sending newsletter:', error);
       req.session.statusMessage = {
         type: 'error',
-        text: 'Error sending newsletter. Please try again.'
+        text: '❌ Error sending newsletter. Please try again.'
       };
       res.redirect('/dashboard');
     }

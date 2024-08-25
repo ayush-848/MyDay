@@ -15,5 +15,13 @@
         <% } %>
     </ul>
   </nav>
+<!-- views/subscribe.ejs -->
+<form action="/subscribe" method="POST" class="newsletter-form">
+  <h3>Subscribe to Our Newsletter</h3>
+  <input type="email" name="email" placeholder="Enter your email" required>
+  <button type="submit">Subscribe</button>
+</form>
+
+
   <p class="footer__copyright">&copy; <%- new Date().getFullYear(); %> Ayush | With NodeJs & MongoDB</p>
 </footer>

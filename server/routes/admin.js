@@ -1,9 +1,12 @@
 const express = require('express');
+require('dotenv').config();
 const router = express.Router();
 const Post = require('../models/Post');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Subscriber = require('../models/Subscriber');
+const {sendNewsletter} =require('../../utils/mailer')
 
 const adminLayout = '../views/layouts/admin.ejs';
 const jwtSecret = process.env.JWT_SECRET;
@@ -86,6 +89,9 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         // Fetch posts specific to the logged-in user
         const posts = await Post.find({ user: req.userId }).sort({ createdAt: 'desc' });
 
+        // Fetch the full user object
+        const user = await User.findById(req.userId);
+
         // Prepare locals for rendering
         const locals = {
             title: 'Dashboard',
@@ -95,11 +101,12 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         const statusMessage = req.session.statusMessage;
         delete req.session.statusMessage;
 
-        // Render the dashboard view with posts data
+        // Render the dashboard view with posts data and user object
         res.render('admin/dashboard', {
             locals,
             data: posts, 
             statusMessage,
+            user, // Pass the full user object
             layout: adminLayout
         });
     } catch (error) {
@@ -107,7 +114,6 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
-
 
 // Admin - Create new post
 router.get('/add-post', authMiddleware, async (req, res) => {
@@ -206,6 +212,34 @@ router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
         res.redirect('/dashboard');
     }
 });
+
+
+router.post('/send-newsletter', async (req, res) => {
+    try {
+      const { newsletterContent } = req.body;
+      
+      // Fetch all subscribers
+      const subscribers = await Subscriber.find();
+  
+      // Send email to each subscriber
+      for (let subscriber of subscribers) {
+        await sendNewsletter(subscriber.email, 'Newsletter Update', newsletterContent);
+      }
+  
+      req.session.statusMessage = {
+        type: 'success',
+        text: 'Newsletter sent successfully!'
+      };
+      res.redirect('/dashboard');
+    } catch (error) {
+      console.error('Error sending newsletter:', error);
+      req.session.statusMessage = {
+        type: 'error',
+        text: 'Error sending newsletter. Please try again.'
+      };
+      res.redirect('/dashboard');
+    }
+  });
 
 // Admin - Logout
 router.get('/logout', (req, res) => {

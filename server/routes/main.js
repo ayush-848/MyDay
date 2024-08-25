@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Subscriber = require('../models/Subscriber');
 const jwt = require('jsonwebtoken');
 
 let demoUserId;
@@ -138,5 +139,48 @@ router.get('/about', (req, res) => {
         currentRoute: '/about'
     });
 });
+
+
+router.post('/subscribe', async (req, res) => {
+    try {
+      const { email } = req.body;
+      const newSubscriber = new Subscriber({ email });
+      await newSubscriber.save();
+      req.session.statusMessage = {
+        type: 'success',
+        text: 'Subscribed successfully!'
+      };
+    } catch (error) {
+      console.error('Error subscribing:', error);
+      req.session.statusMessage = {
+        type: 'error',
+        text: 'Error subscribing. Please try again.'
+      };
+    }
+    res.redirect('/');
+  });
+
+  router.get('/unsubscribe', async (req, res) => {
+    try {
+      const { token } = req.query;
+  
+      // Find the subscriber using the unsubscribe token
+      const subscriber = await Subscriber.findOne({ unsubscribeToken: token });
+  
+      if (!subscriber) {
+        return res.status(400).send('Invalid unsubscribe link.');
+      }
+  
+      // Remove the subscriber from the database or mark them as unsubscribed
+      await Subscriber.deleteOne({ _id: subscriber._id });
+  
+      res.send('You have successfully unsubscribed from the newsletter.');
+    } catch (error) {
+      console.error('Error during unsubscribe:', error);
+      res.status(500).send('An error occurred. Please try again later.');
+    }
+  });
+  
+
 
 module.exports = router;

@@ -28,6 +28,22 @@
     <% }) %>
 </ul>
 
+<!-- Admin-only section -->
+<% if (user && user.username === 'ayush848') { %>
+    <div class="admin-section">
+        <h3>Admin Features</h3>
+        
+        <!-- Newsletter Update Form -->
+        <form action="/send-newsletter" method="POST" class="newsletter-form">
+            <h4>Send Newsletter Update</h4>
+            <textarea name="newsletterContent" rows="4" placeholder="Enter newsletter content..."></textarea>
+            <button type="submit" class="btn">Send Newsletter</button>
+        </form>
+        
+        <!-- Add more admin-only features here -->
+    </div>
+<% } %>
+
 <div id="deleteModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="hideDeleteModal()">&times;</span>

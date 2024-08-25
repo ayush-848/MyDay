@@ -50,7 +50,7 @@ router.post('/admin', async (req, res) => {
         }
         const token = jwt.sign({ userId: user._id }, jwtSecret);
         res.cookie('token', token, { httpOnly: true });
-        res.redirect('/dashboard');
+        res.redirect('/');
     } catch (error) {
         res.status(500).json({ message: 'Error logging in' });
     }

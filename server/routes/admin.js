@@ -234,15 +234,19 @@ router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
     try {
         const post = await Post.findOneAndDelete({ _id: req.params.id, user: req.userId });
         if (!post) {
-           
+            req.session.statusMessage = { type: 'error', text: '❌ Post not found or you do not have permission to delete it.' };
+        } else {
+            req.session.statusMessage = { type: 'success', text: '✅ Post deleted successfully!' };
         }
-        req.session.statusMessage = { type: 'success', text: '✅ Post deleted successfully!' };
         res.redirect('/dashboard');
     } catch (error) {
-        req.session.statusMessage = { type: 'error', text: '❌ Oops! An error occured while deleting post.' };
+        console.error('Error deleting post:', error);
+        req.session.statusMessage = { type: 'error', text: '❌ An error occurred while deleting the post.' };
         res.redirect('/dashboard');
     }
 });
+
+
 
 
 router.post('/send-newsletter', async (req, res) => {

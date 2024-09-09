@@ -1,0 +1,181 @@
+<!-- user-search-recommended.ejs -->
+<div class="user-search-section">
+    <!-- Search Box -->
+    <div class="user-search">
+        <input type="text" id="userSearchInput" placeholder="Search by username..." oninput="searchUsers()">
+        <div id="userSearchResults" class="search-results"></div>
+    </div>
+
+    <!-- Recommended Users Section -->
+    <div class="recommended-users">
+        <h4>Recommended Users</h4>
+        <ul>
+            <% if (recommendedUsers.length > 0) { %>
+                <% recommendedUsers.forEach(user => { %>
+                    <li><a href="/user/<%= user.username %>"><%= user.username %></a></li>
+                <% }) %>
+            <% } else { %>
+                <p>No recommended users available.</p>
+            <% } %>
+        </ul>
+    </div>
+</div>
+
+
+<style>
+    .user-search-section {
+        width: 100%;
+        max-width: 350px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        background: transparent;
+        margin: 20px auto;
+        position: relative;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .user-search {
+        margin-bottom: 20px;
+    }
+
+    .user-search input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        color: #333;
+        box-sizing: border-box;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .user-search input:focus {
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+        outline: none;
+    }
+
+    .search-results {
+        margin-top: 8px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 8px;
+        display: none; /* Hide by default */
+    }
+
+    .search-results.visible {
+        display: block; /* Show when there are results */
+    }
+
+    .search-results a {
+        display: block;
+        padding: 10px;
+        color: #333;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .search-results a:hover {
+        text-decoration: underline;
+    }
+
+    .recommended-users h4 {
+        margin: 0 0 12px 0;
+        font-size: 18px;
+        color: #333;
+        padding-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .recommended-users ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .recommended-users li {
+        margin-bottom: 10px;
+    }
+
+    .recommended-users a {
+        text-decoration: none;
+       font-style: italic;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .recommended-users a:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 480px) {
+        .user-search-section {
+            padding: 15px;
+            margin: 10px auto;
+            max-width: 200px;
+        }
+
+        .user-search input {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .search-results {
+            max-height: 150px;
+            padding: 6px;
+        }
+
+        .recommended-users h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .recommended-users a {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<script>
+    // User Search Script
+    function searchUsers() {
+        const input = document.getElementById('userSearchInput').value.trim();
+        const resultsContainer = document.getElementById('userSearchResults');
+        resultsContainer.innerHTML = ''; // Clear previous results
+
+        if (input.length > 0) {
+            fetch(`/search-users?username=${encodeURIComponent(input)}`)
+                .then(response => response.json())
+                .then(users => {
+                    if (users.length > 0) {
+                        resultsContainer.innerHTML = '';
+                        resultsContainer.classList.add('visible'); // Show results
+                        users.forEach(user => {
+                            const userLink = document.createElement('a');
+                            userLink.href = `/user/${user.username}`;
+                            userLink.textContent = user.username;
+                            resultsContainer.appendChild(userLink);
+                        });
+                    } else {
+                        resultsContainer.innerHTML = '<p>No users found</p>';
+                        resultsContainer.classList.add('visible'); // Show "No users found" message
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    resultsContainer.innerHTML = '<p>Error fetching users</p>';
+                    resultsContainer.classList.add('visible'); // Show error message
+                });
+        } else {
+            resultsContainer.classList.remove('visible'); // Hide results if input is empty
+        }
+    }
+</script>

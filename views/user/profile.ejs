@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= user.username %> Profile</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="profile-container">
+        <h1><%= user.username %>'s Profile</h1>
+        <p>Email: <%= user.email %></p>
+
+        <!-- Follow Button -->
+        <% if (user._id.toString() !== currentUser._id.toString()) { %>
+            <form action="/follow/<%= user.username %>" method="POST">
+                <button type="submit" class="btn">
+                    <% if (isFollowing) { %>
+                        Unfollow
+                    <% } else { %>
+                        Follow
+                    <% } %>
+                </button>
+            </form>
+        <% } %>
+
+        <h2>Posts by <%= user.username %></h2>
+        <ul>
+            <% posts.forEach(post => { %>
+                <li>
+                    <a href="/post/<%= post._id %>"><%= post.title %></a>
+                </li>
+            <% }) %>
+        </ul>
+    </div>
+</body>
+</html>

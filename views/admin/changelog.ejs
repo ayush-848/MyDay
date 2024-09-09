@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <meta name="description" content="<%= description %>" />
+    <style>
+        /* Modern General Styles */
+        body {
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+
+
+        /* Modern Changelog List Styling */
+        .changelog-list h2 {
+            font-size: 32px;
+            color: #212529;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .changelog-entry {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .changelog-entry:last-child {
+            border-bottom: none;
+        }
+
+        .changelog-entry h3 {
+            font-size: 24px;
+            color: #007bff;
+            margin-bottom: 16px;
+        }
+
+        .changelog-info {
+            margin-bottom: 16px;
+        }
+
+        .changelog-info strong {
+            font-weight: 700;
+            color: #495057;
+            margin-right: 8px;
+        }
+
+        .changelog-details {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .changelog-details li {
+            margin-bottom: 3px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .changelog-details li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Status Message Display -->
+        <% if (statusMessage) { %>
+            <div class="alert <%= statusMessage.type === 'success' ? 'alert-success' : 'alert-danger' %>">
+                <%= statusMessage.text %>
+            </div>
+        <% } %>
+
+        
+
+        <!-- Display Changelog Entries -->
+        <div class="changelog-list">
+            <h2>Changelog</h2>
+            <% changelogs.forEach(changelog => { %>
+            <div class="changelog-entry">
+                <div class="changelog-info">
+                    <p><strong>Version:</strong> <%= changelog.versionNumber %></p>
+                    <p><strong>Updated On:</strong> <%= new Date(changelog.updatedOn).toDateString() %></p>
+                    <p><strong>Details:</strong></p>
+                </div>
+                <ul class="changelog-details">
+                    <% changelog.featureDetails.split('- ').slice(1).forEach(detail => { %>
+                    <li><%= detail.trim() %></li>
+                    <% }) %>
+                </ul>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+</body>
+</html>

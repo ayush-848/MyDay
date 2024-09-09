@@ -3,16 +3,18 @@ require('dotenv').config();
 const router = express.Router();
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Follow = require('../models/Follow');
+const Changelog = require('../models/Changelog');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Subscriber = require('../models/Subscriber');
 const {sendNewsletter} =require('../../utils/mailer')
-
+const mongoose = require('mongoose');
 const adminLayout = '../views/layouts/admin.ejs';
 const jwtSecret = process.env.JWT_SECRET;
 
 // Admin - check login
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     const token = req.cookies.token;
     if (!token) {
         return res.status(401).redirect('/login');
@@ -20,8 +22,16 @@ const authMiddleware = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, jwtSecret);
         req.userId = decoded.userId;
+
+        // Fetch user details from the database
+        const user = await User.findById(req.userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        req.user = user; // Attach the user object to the request
         next();
     } catch (error) {
+        console.error('Authentication error:', error);
         res.status(401).redirect('/login');
     }
 };
@@ -95,11 +105,22 @@ router.post('/register', async (req, res) => {
 // Admin Dashboard
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
+
         // Fetch posts specific to the logged-in user
         const posts = await Post.find({ user: req.userId }).sort({ createdAt: 'desc' });
 
         // Fetch the full user object
         const user = await User.findById(req.userId);
+
+        // Ensure mongoose is imported and used correctly
+        // Convert req.userId to ObjectId
+        const userIdObjectId = new mongoose.Types.ObjectId(req.userId);
+
+        // Fetch recommended users
+        const recommendedUsers = await User.aggregate([
+            { $match: { _id: { $ne: userIdObjectId } } },
+            { $sample: { size: 3 } }
+        ]);
 
         // Prepare locals for rendering
         const locals = {
@@ -110,12 +131,13 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         const statusMessage = req.session.statusMessage;
         delete req.session.statusMessage;
 
-        // Render the dashboard view with posts data and user object
+        // Render the dashboard view
         res.render('admin/dashboard', {
             locals,
             data: posts, 
             statusMessage,
-            user, // Pass the full user object
+            user, 
+            recommendedUsers, 
             layout: adminLayout
         });
     } catch (error) {
@@ -250,6 +272,160 @@ router.post('/send-newsletter', async (req, res) => {
     }
   });
 
+
+  router.post('/follow/:username', authMiddleware, async (req, res) => {
+    try {
+        const username = req.params.username;
+        const userToFollow = await User.findOne({ username });
+        if (!userToFollow) {
+            return res.status(404).send('User not found');
+        }
+
+        const currentUserId = req.userId;
+        const existingFollow = await Follow.findOne({
+            follower: currentUserId,
+            following: userToFollow._id
+        });
+
+        if (existingFollow) {
+            // Unfollow
+            await Follow.deleteOne({ _id: existingFollow._id });
+        } else {
+            // Follow
+            await Follow.create({
+                follower: currentUserId,
+                following: userToFollow._id
+            });
+        }
+
+        res.redirect(`/user/${username}`);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server Error');
+    }
+});
+
+// GET route to display changelogs
+router.get('/changelog', authMiddleware, async (req, res) => {
+    try {
+        // Fetch all changelog entries
+        const changelogs = await Changelog.find().sort({ createdAt: 'desc' });
+
+        // Fetch the logged-in user
+        const user = await User.findById(req.userId);
+
+        // Retrieve statusMessage from session if it exists
+        const statusMessage = req.session.statusMessage || null;
+        delete req.session.statusMessage;
+
+        // Render the changelog view with changelog entries, status message, and user
+        res.render('admin/changelog', {
+            title: 'Changelog',
+            description: 'View the list of changes and updates.',
+            changelogs,
+            statusMessage,
+            user
+        });
+    } catch (error) {
+        console.error('Error fetching changelog data:', error);
+        res.status(500).send('Server Error');
+    }
+});
+
+router.post('/add-changelog', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.username !== 'ayush848') {
+            req.session.statusMessage = {
+                type: 'error',
+                text: '❌ You do not have permission to add a changelog.'
+            };
+            return res.redirect('/changelog');
+        }
+
+        const { featureDetails, versionNumber, updatedOn } = req.body;
+
+        // Ensure all required fields are provided
+        if (!featureDetails || !versionNumber || !updatedOn) {
+            req.session.statusMessage = {
+                type: 'error',
+                text: '❌ All fields are required.'
+            };
+            return res.redirect('/changelog');
+        }
+
+        const newChangelog = new Changelog({
+            featureDetails,
+            versionNumber,
+            updatedOn: new Date(updatedOn) // Ensure updatedOn is a date
+        });
+
+        await newChangelog.save();
+
+        req.session.statusMessage = {
+            type: 'success',
+            text: '✅ Changelog entry added successfully!'
+        };
+        res.redirect('/changelog');
+    } catch (error) {
+        console.error('Error adding changelog:', error);
+        req.session.statusMessage = {
+            type: 'error',
+            text: '❌ Oops! Error occurred while adding changelog.'
+        };
+        res.redirect('/changelog');
+    }
+});
+
+
+router.get('/user/:username', authMiddleware, async (req, res) => {
+    try {
+        const username = req.params.username;
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        const posts = await Post.find({ user: user._id }).sort({ createdAt: 'desc' });
+
+        const currentUserId = req.userId;
+        const currentUser = await User.findById(currentUserId);
+
+        // Check if the current user is following the profile user
+        const isFollowing = await Follow.findOne({
+            follower: currentUserId,
+            following: user._id
+        });
+
+        res.render('user/profile', {
+            user,
+            posts,
+            currentUser,
+            isFollowing
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server Error');
+    }
+});
+
+// User search route
+router.get('/search-users', async (req, res) => {
+    const { username } = req.query; // Get the username from the query parameter
+    try {
+        if (username) {
+            // Perform an exact match search
+            const users = await User.find({ username: username });
+            res.json(users); // Return the matched users as JSON
+        } else {
+            res.json([]); // Return an empty array if no username is provided
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server Error');
+    }
+});
+
+
+
 // Admin - Logout
 router.get('/logout', (req, res) => {
     res.render('admin/logout', { layout: adminLayout });
@@ -259,5 +435,7 @@ router.post('/logout/confirm', async (req, res) => {
     res.clearCookie('token');
     res.redirect('/'); // Redirect to the homepage or login page
 });
+
+
 
 module.exports = router;

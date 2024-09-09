@@ -306,13 +306,16 @@ router.post('/send-newsletter', async (req, res) => {
 });
 
 // GET route to display changelogs
-router.get('/changelog', authMiddleware, async (req, res) => {
+router.get('/changelog', async (req, res) => {
     try {
         // Fetch all changelog entries
         const changelogs = await Changelog.find().sort({ createdAt: 'desc' });
 
-        // Fetch the logged-in user
-        const user = await User.findById(req.userId);
+        // Fetch the logged-in user if there is a user ID
+        let user = null;
+        if (req.userId) {
+            user = await User.findById(req.userId);
+        }
 
         // Retrieve statusMessage from session if it exists
         const statusMessage = req.session.statusMessage || null;
@@ -331,6 +334,7 @@ router.get('/changelog', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 
 router.post('/add-changelog', authMiddleware, async (req, res) => {
     try {

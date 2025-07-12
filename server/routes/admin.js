@@ -12,6 +12,7 @@ const {sendNewsletter} =require('../../utils/mailer')
 const mongoose = require('mongoose');
 const adminLayout = '../views/layouts/admin.ejs';
 const jwtSecret = process.env.JWT_SECRET;
+const sendContactFormEmail = require('../../utils/contactMail');
 
 // Admin - check login
 const authMiddleware = async (req, res, next) => {
@@ -246,9 +247,6 @@ router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
     }
 });
 
-
-
-
 router.post('/send-newsletter', async (req, res) => {
     try {
       const { newsletterContent } = req.body;
@@ -277,7 +275,7 @@ router.post('/send-newsletter', async (req, res) => {
   });
 
 
-  router.post('/follow/:username', authMiddleware, async (req, res) => {
+router.post('/follow/:username', authMiddleware, async (req, res) => {
     try {
         const username = req.params.username;
         const userToFollow = await User.findOne({ username });
@@ -307,6 +305,36 @@ router.post('/send-newsletter', async (req, res) => {
         console.log(error);
         res.status(500).send('Server Error');
     }
+});
+
+router.get('/contact',async(req,res)=>{
+    res.render('admin/contact', {
+        title: 'Changelog',
+        description: 'Contact the owner',
+    });
+})
+
+router.post('/submit-contact', (req, res) => {
+    try{
+        const { name, email, message } = req.body;
+
+    // Send email with the form data
+    sendContactFormEmail(name, email, message);
+    req.session.statusMessage = {
+        type: 'success',
+        text: '✅ Mail sent successfully!'
+      };
+      res.redirect('/');
+    }
+
+      catch (error) {
+        console.error('Error sending newsletter:', error);
+        req.session.statusMessage = {
+          type: 'error',
+          text: '❌ Error sending newsletter. Please try again.'
+        };
+        res.redirect('/');
+      }
 });
 
 // GET route to display changelogs
